@@ -1,0 +1,34 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Text2Web</title></head><style>body{max-width:650px;margin:0 auto;background:#fefdfd}*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;color:#0b0b0b;border:0;outline:0}textarea{width:100%;font-size:16px;background:#e6e2e2;border-radius:5px;padding:.5rem}button{margin-top:1rem;font-size:16px;background:#3b62d4;color:#f7f3f3;border-radius:5px;padding:.5rem;cursor:pointer;transition:.2s}button:hover{background:#5279ef}#result{background:#e6e2e2;border-radius:5px}</style><body><h1>Text2Web</h1><p>Turn a simple text prompt to a web page!</p><textarea id="input" placeholder="A simple blog" autofocus></textarea> <button onclick="generate()">Generate</button><h2>Result</h2><iframe id="result" src="/view/empty" style="width:100%;height:100%"></iframe><button id="show" style="display:none"></button></body><script>// Function to generate the web page sends a POST request to /api/generate with the input text
+    // Also make it stop the time it took to generate it
+
+    function generate() {
+        const start = Date.now();
+
+        const input = document.getElementById("input").value;
+        const result = document.getElementById("result");
+        const show = document.getElementById("show");
+
+        if (!input) {
+            result.innerHTML = "Please enter a text prompt";
+            return;
+        }
+        result.src = '/view/loading'
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/generate", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                result.src = '/view/' + xhr.responseText;
+
+                show.style.display = "block";
+                const seconds = (Date.now() - start) / 1000;
+                show.innerText = `Took ${seconds}s, click to view`
+
+                show.onclick = function() {
+                    window.open('/view/' + xhr.responseText, '_blank');
+                }
+            }
+        };
+        xhr.send(JSON.stringify({ input }));
+    }</script></html>
